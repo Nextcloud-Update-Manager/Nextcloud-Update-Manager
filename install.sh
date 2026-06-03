@@ -1,12 +1,15 @@
 #!/bin/bash
 # =============================================================================
-# install.sh – Nextcloud Update Manager: Installationsskript
+# install.sh – Nextcloud Update Manager: Installations- und Update-Skript
 #
 # Verwendung:
-#   git clone https://github.com/...
-#   cd nextcloud-update
-#   chmod +x install.sh
-#   sudo ./install.sh
+#   sudo ./install.sh          # Erstinstallation ODER Update (automatisch erkannt)
+#   sudo ./install.sh --full   # Vollständige Neuinstallation inkl. SMTP + Cronjob
+#
+# Update-Modus (automatisch wenn Skripte + smtp.conf bereits vorhanden):
+#   - Skripte werden aktualisiert (alte Version als .bak gesichert)
+#   - SMTP-Konfiguration bleibt unverändert
+#   - Cronjob bleibt unverändert
 # =============================================================================
 
 set -uo pipefail
@@ -25,6 +28,16 @@ CRON_FILE="/etc/cron.d/nextcloud-update"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/scripts"
 MANUAL_SCRIPT="${SCRIPT_DIR}/nextcloud-update-manual.sh"
 CRON_SCRIPT="${SCRIPT_DIR}/nextcloud-update-cron.sh"
+
+# Update-Modus: automatisch wenn Skripte + SMTP-Config bereits vorhanden.
+# --full erzwingt immer die vollständige Konfiguration.
+UPDATE_MODE=false
+if [[ "${1:-}" != "--full" ]] && \
+   [[ -f "${INSTALL_DIR}/nextcloud-update-manual.sh" ]] && \
+   [[ -f "${INSTALL_DIR}/nextcloud-update-cron.sh" ]] && \
+   [[ -f "${SMTP_CONF}" ]]; then
+    UPDATE_MODE=true
+fi
 
 # =============================================================================
 # FARBEN
@@ -303,6 +316,13 @@ setup_smtp_config() {
     mkdir -p "$CONFIG_DIR"
     chmod 750 "$CONFIG_DIR"
 
+    # Im Update-Modus bestehende Konfiguration unverändert lassen
+    if $UPDATE_MODE; then
+        ok "SMTP-Konfiguration unverändert übernommen: $SMTP_CONF"
+        info "Zum Ändern der Konfiguration: sudo ./install.sh --full"
+        return 0
+    fi
+
     if [[ -f "$SMTP_CONF" ]]; then
         warn "Bestehende SMTP-Konfiguration gefunden: $SMTP_CONF"
         info "Bestehende Werte werden als Vorschlag angezeigt."
@@ -381,6 +401,21 @@ EOF
 setup_cronjob() {
     print_header "Schritt 5/5: Cronjob einrichten"
 
+    # Im Update-Modus bestehenden Cronjob unverändert lassen
+    if $UPDATE_MODE; then
+        if [[ -f "$CRON_FILE" ]]; then
+            local current_schedule
+            current_schedule=$(grep -v '^#' "$CRON_FILE" | grep -v '^$' | grep -v '^[A-Z_]' \
+                               | awk '{print $1,$2,$3,$4,$5}' | head -1)
+            ok "Cronjob unverändert übernommen: $CRON_FILE"
+            info "Aktueller Zeitplan: ${current_schedule:-unbekannt}"
+        else
+            warn "Kein Cronjob gefunden – wird übersprungen"
+            info "Zum Einrichten: sudo ./install.sh --full"
+        fi
+        return 0
+    fi
+
     echo -e "  Empfehlung: Wöchentlicher Lauf (z.B. Sonntag 03:00 Uhr)\n"
 
     read -rp "  Cronjob jetzt einrichten? [Y/n]: " setup_cron
@@ -424,7 +459,11 @@ EOF
 print_summary() {
     echo ""
     sep
-    echo -e "${BOLD}${GREEN}  Installation abgeschlossen!${RESET}"
+    if $UPDATE_MODE; then
+        echo -e "${BOLD}${GREEN}  Aktualisierung abgeschlossen!${RESET}"
+    else
+        echo -e "${BOLD}${GREEN}  Installation abgeschlossen!${RESET}"
+    fi
     sep
     echo ""
     echo -e "  ${BOLD}Installierte Dateien:${RESET}"
@@ -456,8 +495,15 @@ print_summary() {
 
 echo ""
 sep
-echo -e "${BOLD}${CYAN}  Nextcloud Update Manager – Installation${RESET}"
-echo -e "  $(date '+%Y-%m-%d %H:%M:%S')"
+if $UPDATE_MODE; then
+    echo -e "${BOLD}${CYAN}  Nextcloud Update Manager – Aktualisierung${RESET}"
+    echo -e "  $(date '+%Y-%m-%d %H:%M:%S')"
+    echo -e "  ${YELLOW}Update-Modus: SMTP und Cronjob bleiben unverändert${RESET}"
+    echo -e "  ${CYAN}Vollständige Neukonfiguration: sudo ./install.sh --full${RESET}"
+else
+    echo -e "${BOLD}${CYAN}  Nextcloud Update Manager – Installation${RESET}"
+    echo -e "  $(date '+%Y-%m-%d %H:%M:%S')"
+fi
 sep
 
 check_root

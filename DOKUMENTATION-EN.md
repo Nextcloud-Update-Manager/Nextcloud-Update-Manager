@@ -29,10 +29,10 @@
 
 The **Nextcloud Update Manager** automates the maintenance of Nextcloud installations on ISPConfig servers. It consists of two Bash scripts with different purposes:
 
-| Script                       | Use case                             | Behaviour on major upgrade      |
-| ---------------------------- | ------------------------------------ | ------------------------------- |
+| Script | Use case | Behaviour on major upgrade |
+|--------|----------|---------------------------|
 | `nextcloud-update-manual.sh` | Manual execution by an administrator | Interactive confirmation prompt |
-| `nextcloud-update-cron.sh`   | Automated root cron job              | Email notification              |
+| `nextcloud-update-cron.sh` | Automated root cron job | Email notification |
 
 **Functions shared by both scripts:**
 
@@ -47,11 +47,11 @@ The **Nextcloud Update Manager** automates the maintenance of Nextcloud installa
 
 ### Operating System
 
-| Distribution              | Versions                                      | Status                    |
-| ------------------------- | --------------------------------------------- | ------------------------- |
-| Debian                    | 11 (Bullseye), 12 (Bookworm), **13 (Trixie)** | Fully supported           |
-| Ubuntu                    | 20.04 LTS, 22.04 LTS, 24.04 LTS               | Fully supported           |
-| RHEL / CentOS / AlmaLinux | 8+                                            | Limited support (dnf/yum) |
+| Distribution | Versions | Status |
+|---|---|---|
+| Debian | 11 (Bullseye), 12 (Bookworm), **13 (Trixie)** | Fully supported |
+| Ubuntu | 20.04 LTS, 22.04 LTS, 24.04 LTS | Fully supported |
+| RHEL / CentOS / AlmaLinux | 8+ | Limited support (dnf/yum) |
 
 **Debian 13 "Trixie" (stable since August 2025):** All dependencies are available in the official repositories. `bash 5.2`, `curl 8.14`, `default-mysql-client` (including `mysqldump`), and `apt-get` work without any modifications. The scripts run identically on Debian 13 as on Debian 11/12.
 
@@ -74,12 +74,12 @@ The scripts require the **ISPConfig standard layout**:
 
 ### Required Packages
 
-| Package                                            | Purpose                                     | Installed automatically |
-| -------------------------------------------------- | ------------------------------------------- | ----------------------- |
-| `curl`                                             | Update server queries, email delivery       | Yes                     |
-| `jq`                                               | JSON processing (occ output, App Store API) | Yes                     |
-| `rsync`                                            | File backup before major upgrades           | Yes                     |
-| `default-mysql-client` (Debian) / `mariadb` (RHEL) | Database backup (`mysqldump`)               | Yes                     |
+| Package | Purpose | Installed automatically |
+|---------|---------|------------------------|
+| `curl` | Update server queries, email delivery | Yes |
+| `jq` | JSON processing (occ output, App Store API) | Yes |
+| `rsync` | File backup before major upgrades | Yes |
+| `default-mysql-client` (Debian) / `mariadb` (RHEL) | Database backup (`mysqldump`) | Yes |
 
 ### Permissions
 
@@ -357,12 +357,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 The cron script behaves identically to Script 1, with these differences:
 
-| Aspect        | Manual script            | Cron script                              |
-| ------------- | ------------------------ | ---------------------------------------- |
-| Output        | Coloured terminal output | Log file only                            |
-| Minor update  | Automatic                | Automatic                                |
-| Major upgrade | Interactive prompt       | Email notification, no automatic upgrade |
-| SMTP          | Not required             | Required for major upgrade notifications |
+| Aspect | Manual script | Cron script |
+|--------|--------------|-------------|
+| Output | Coloured terminal output | Log file only |
+| Minor update | Automatic | Automatic |
+| Major upgrade | Interactive prompt | Email notification, no automatic upgrade |
+| SMTP | Not required | Required for major upgrade notifications |
 
 ### 6.3 Email Notification (Major Upgrade)
 
@@ -418,28 +418,55 @@ All providers offering SMTPS on port 465 are supported. STARTTLS (port 587) is n
 
 ## 7. Installer (install.sh)
 
-### 7.1 Flow
+### 7.1 Usage
+
+```bash
+sudo ./install.sh          # First install OR update (detected automatically)
+sudo ./install.sh --full   # Full reinstall including SMTP + cron job
+```
+
+### 7.2 Automatic Mode Detection
+
+The installer detects whether this is a first-time installation or an update:
+
+| Mode | Trigger | Scripts | SMTP config | Cron job |
+|------|---------|---------|-------------|----------|
+| **Install** | First run (no existing installation) | Installed | Interactive setup | Interactive setup |
+| **Update** | Re-run (scripts + smtp.conf already present) | Updated | Unchanged | Unchanged |
+| **Full** | `--full` flag | Updated | Interactive setup | Interactive setup |
+
+**Typical update workflow after a new repository version:**
+
+```bash
+cd Nextcloud-Update-Manager
+git pull
+sudo ./install.sh
+```
+
+The installer detects the existing installation and only updates the scripts. SMTP credentials and cron schedule are left untouched.
+
+### 7.3 Flow
 
 ```
 1. Prerequisites:      Root check, verify source files, detect package manager
 2. Dependencies:       Check curl, jq, rsync, mysqldump — install if missing
-3. Scripts:            Copy to /usr/local/sbin/, chmod 700, back up existing versions
-4. SMTP configuration: Interactive input → /etc/nextcloud-update/smtp.conf (chmod 600)
-5. Cron job:           Optional, schedule configurable
+3. Scripts:            Copy to /usr/local/sbin/, chmod 700, back up existing version as .bak
+4. SMTP configuration: Update mode: unchanged | Full install: interactive input
+5. Cron job:           Update mode: unchanged | Full install: configurable
 ```
 
-### 7.2 SMTP Prompts
+### 7.4 SMTP Prompts (first install or --full only)
 
 The installer asks for the following values:
 
-| Variable    | Description                                    | Validation     |
-| ----------- | ---------------------------------------------- | -------------- |
-| `SMTP_HOST` | SMTP server hostname                           | Required       |
-| `SMTP_PORT` | SMTP port (default: 465)                       | Number 1–65535 |
-| `SMTP_USER` | SMTP username                                  | Required       |
-| `SMTP_PASS` | SMTP password (hidden input)                   | Required       |
-| `SMTP_FROM` | Sender address                                 | Email syntax   |
-| `MAIL_TO`   | Recipient address (default: admin@example.com) | Email syntax   |
+| Variable | Description | Validation |
+|----------|-------------|------------|
+| `SMTP_HOST` | SMTP server hostname | Required |
+| `SMTP_PORT` | SMTP port (default: 465) | Number 1–65535 |
+| `SMTP_USER` | SMTP username | Required |
+| `SMTP_PASS` | SMTP password (hidden input) | Required |
+| `SMTP_FROM` | Sender address | Email syntax |
+| `MAIL_TO` | Recipient address (default: admin@example.com) | Email syntax |
 
 Existing values from `smtp.conf` are shown as suggestions (password excepted).
 
@@ -467,12 +494,12 @@ After input, a **connection test** is offered that sends a test email to verify 
 
 **Log levels:**
 
-| Level   | Meaning                                 |
-| ------- | --------------------------------------- |
-| `INFO`  | Normal operation                        |
-| `WARN`  | Non-critical problem (script continues) |
-| `ERROR` | Critical failure (action aborted)       |
-| `DEBUG` | Detailed technical information          |
+| Level | Meaning |
+|-------|---------|
+| `INFO` | Normal operation |
+| `WARN` | Non-critical problem (script continues) |
+| `ERROR` | Critical failure (action aborted) |
+| `DEBUG` | Detailed technical information |
 
 ### 8.3 Sample Log (Minor Update)
 
@@ -520,10 +547,10 @@ A backup is created **only before major upgrades**. Minor updates do not need a 
 
 ### 9.1 Backup Contents
 
-| Component       | What                      | Where                                                              |
-| --------------- | ------------------------- | ------------------------------------------------------------------ |
-| Nextcloud files | rsync (without `data/`)   | `/var/backups/nextcloud/{web-user}_v{version}_{date}/files/`       |
-| Database        | mysqldump (MySQL/MariaDB) | `/var/backups/nextcloud/{web-user}_v{version}_{date}/database.sql` |
+| Component | What | Where |
+|-----------|------|-------|
+| Nextcloud files | rsync (without `data/`) | `/var/backups/nextcloud/{web-user}_v{version}_{date}/files/` |
+| Database | mysqldump (MySQL/MariaDB) | `/var/backups/nextcloud/{web-user}_v{version}_{date}/database.sql` |
 
 **Note:** The `data/` directory is excluded from the backup because it typically lives on separate storage and can be very large. User data must be covered by regular server-level backups.
 
@@ -721,14 +748,14 @@ Returns a JSON array of all apps available for the given platform version. Each 
 
 ### 11.2 occ Commands
 
-| Command                           | Purpose                               |
-| --------------------------------- | ------------------------------------- |
-| `occ status --output=json`        | Current version and status            |
-| `occ maintenance:mode --on/--off` | Toggle maintenance mode               |
-| `occ upgrade`                     | Database migrations after file update |
-| `occ app:list --output=json`      | List all installed apps               |
-| `occ app:update --all`            | Update all apps to the latest version |
-| `occ maintenance:repair`          | Repair routine (indices, caches)      |
+| Command | Purpose |
+|---------|---------|
+| `occ status --output=json` | Current version and status |
+| `occ maintenance:mode --on/--off` | Toggle maintenance mode |
+| `occ upgrade` | Database migrations after file update |
+| `occ app:list --output=json` | List all installed apps |
+| `occ app:update --all` | Update all apps to the latest version |
+| `occ maintenance:repair` | Repair routine (indices, caches) |
 
 ### 11.3 Update Process in Detail
 

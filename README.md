@@ -51,6 +51,28 @@ The installer will:
 3. Create `/etc/nextcloud-update/smtp.conf` (interactive setup)
 4. Optionally configure a cron job
 
+## Updating
+
+When a new version of this repository is available, pull and re-run the installer. It automatically detects an existing installation and switches to **update mode** — only the scripts are replaced, SMTP configuration and cron job are left untouched:
+
+```bash
+cd AF-Nextcloud-Update-Skripte
+git pull
+sudo ./install.sh
+```
+
+To force a full reconfiguration (e.g. to change the SMTP password or cron schedule):
+
+```bash
+sudo ./install.sh --full
+```
+
+| Mode | Trigger | Scripts | SMTP config | Cron job |
+|------|---------|---------|-------------|----------|
+| **Install** | First run (no existing installation) | Installed | Interactive setup | Interactive setup |
+| **Update** | Re-run (scripts + smtp.conf already present) | Updated | Unchanged | Unchanged |
+| **Full** | `--full` flag | Updated | Interactive setup | Interactive setup |
+
 ## Manual Installation
 
 ```bash
