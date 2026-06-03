@@ -38,8 +38,8 @@ Automated update and upgrade management for multiple Nextcloud installations man
 ## Quick Install
 
 ```bash
-git clone https://github.com/TheLegeres71/Nextcloud-Update-Manager.git
-cd Nextcloud-Update-Manager
+git clone https://github.com/TheLegeres71/AF-Nextcloud-Update-Skripte.git
+cd AF-Nextcloud-Update-Skripte
 chmod +x install.sh
 sudo ./install.sh
 ```

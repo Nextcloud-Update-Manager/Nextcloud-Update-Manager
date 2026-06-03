@@ -47,11 +47,11 @@ Der **Nextcloud Update Manager** automatisiert die Wartung von Nextcloud-Install
 
 ### Betriebssystem
 
-| Distribution | Versionen | Status |
-|---|---|---|
-| Debian | 11 (Bullseye), 12 (Bookworm), **13 (Trixie)** | Vollständig unterstützt |
-| Ubuntu | 20.04 LTS, 22.04 LTS, 24.04 LTS | Vollständig unterstützt |
-| RHEL / CentOS / AlmaLinux | 8+ | Eingeschränkt unterstützt (dnf/yum) |
+| Distribution              | Versionen                                     | Status                              |
+| ------------------------- | --------------------------------------------- | ----------------------------------- |
+| Debian                    | 11 (Bullseye), 12 (Bookworm), **13 (Trixie)** | Vollständig unterstützt             |
+| Ubuntu                    | 20.04 LTS, 22.04 LTS, 24.04 LTS               | Vollständig unterstützt             |
+| RHEL / CentOS / AlmaLinux | 8+                                            | Eingeschränkt unterstützt (dnf/yum) |
 
 **Debian 13 "Trixie" (stable seit August 2025):** Alle Abhängigkeiten sind in den offiziellen Repos vorhanden. `bash 5.2`, `curl 8.14`, `default-mysql-client` (inkl. `mysqldump`) und `apt-get` funktionieren ohne Anpassungen. Die Skripte laufen auf Debian 13 identisch wie auf Debian 11/12.
 
@@ -432,14 +432,14 @@ Unterstützte SMTP-Anbieter: alle Anbieter mit SMTPS (Port 465). STARTTLS (Port 
 
 Das Installationsskript fragt folgende Werte ab:
 
-| Variable    | Beschreibung                                     | Validierung   |
-| ----------- | ------------------------------------------------ | ------------- |
-| `SMTP_HOST` | SMTP-Servername                                  | Pflichtfeld   |
-| `SMTP_PORT` | SMTP-Port (Standard: 465)                        | Zahl 1–65535  |
-| `SMTP_USER` | SMTP-Benutzername                                | Pflichtfeld   |
-| `SMTP_PASS` | SMTP-Passwort (versteckte Eingabe)               | Pflichtfeld   |
-| `SMTP_FROM` | Absender-Adresse                                 | E-Mail-Syntax |
-| `MAIL_TO`   | Empfänger-Adresse (Standard: admin@example.com)  | E-Mail-Syntax |
+| Variable    | Beschreibung                                    | Validierung   |
+| ----------- | ----------------------------------------------- | ------------- |
+| `SMTP_HOST` | SMTP-Servername                                 | Pflichtfeld   |
+| `SMTP_PORT` | SMTP-Port (Standard: 465)                       | Zahl 1–65535  |
+| `SMTP_USER` | SMTP-Benutzername                               | Pflichtfeld   |
+| `SMTP_PASS` | SMTP-Passwort (versteckte Eingabe)              | Pflichtfeld   |
+| `SMTP_FROM` | Absender-Adresse                                | E-Mail-Syntax |
+| `MAIL_TO`   | Empfänger-Adresse (Standard: admin@example.com) | E-Mail-Syntax |
 
 Bestehende Werte aus `smtp.conf` werden als Vorschlag angezeigt (außer dem Passwort).
 

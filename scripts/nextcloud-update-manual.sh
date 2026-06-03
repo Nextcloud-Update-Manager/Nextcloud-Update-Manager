@@ -424,14 +424,27 @@ run_update() {
         run_occ "$nc_dir" "$web_user" maintenance:mode --off >> "$LOG_FILE" 2>&1 || true
     }
 
-    # 1. Maintenance Mode aktivieren
+    # 1. Überbleibsel prüfen: .bak-Dateien die root gehören blockieren updater.phar
+    #    (entsteht wenn ein vorheriger Update-Lauf als root statt als web-user lief)
+    local stale_bak_files
+    stale_bak_files=$(find "$nc_dir" -name "*.bak" -not -user "$web_user" 2>/dev/null)
+    if [[ -n "$stale_bak_files" ]]; then
+        log "WARN" "Falsch gesetzte .bak-Dateien gefunden (blockieren updater.phar):"
+        while IFS= read -r f; do
+            log "WARN" "  $f ($(stat -c '%U:%G' "$f"))"
+            chown "${web_user}:" "$f" && log "INFO" "  → Eigentümer korrigiert: $f" \
+                                      || log "ERROR" "  → chown fehlgeschlagen: $f"
+        done <<< "$stale_bak_files"
+    fi
+
+    # 2. Maintenance Mode aktivieren
     log "INFO" "Maintenance Mode: AN"
     if ! run_occ "$nc_dir" "$web_user" maintenance:mode --on >> "$LOG_FILE" 2>&1; then
         log "ERROR" "Fehler beim Aktivieren des Maintenance Modes"
         return 1
     fi
 
-    # 2. Nextcloud Updater ausführen (lädt neue Dateien herunter)
+    # 3. Nextcloud Updater ausführen (lädt neue Dateien herunter)
     if [[ -f "$updater_phar" ]]; then
         log "INFO" "Führe Nextcloud Updater (updater.phar) aus..."
         run_php "$web_user" "$updater_phar" --no-interaction >> "$LOG_FILE" 2>&1
@@ -652,12 +665,14 @@ process_installation() {
             return 0
         fi
 
-        # Administrator um Bestätigung bitten
+        # Administrator um Bestätigung bitten.
+        # WICHTIG: </dev/tty erzwingt Lesen vom Terminal, nicht von der
+        # find_installations-Pipe, die als stdin des while-Loops aktiv ist.
         sep
         echo -e "  ${BOLD}Soll das Upgrade auf v${latest_version} jetzt durchgeführt werden?${RESET}"
-        echo -n "  [y/Y/j/J = Ja  |  andere Eingabe = Nein und überspringen]: "
+        echo -n "  [y/Y/j/J = Ja  |  andere Eingabe = Nein und überspringen]: " >/dev/tty
         local answer
-        read -r answer
+        read -r answer </dev/tty
         echo ""
 
         if [[ "${answer:-}" =~ ^[yYjJ]$ ]]; then

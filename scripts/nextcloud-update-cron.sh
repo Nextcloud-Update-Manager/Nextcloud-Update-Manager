@@ -36,7 +36,7 @@ NC_UPDATE_SERVER="https://updates.nextcloud.com/updater_server"
 NC_APPSTORE_API="https://apps.nextcloud.com/api/v1"
 
 SMTP_CONFIG="/etc/nextcloud-update/smtp.conf"
-MAIL_TO="admin@example.com"
+MAIL_TO="info@af-hosting.eu"
 
 # SMTP-Variablen (werden aus SMTP_CONFIG geladen)
 SMTP_HOST=""
@@ -436,14 +436,26 @@ run_update() {
         run_occ "$nc_dir" "$web_user" maintenance:mode --off >> "$LOG_FILE" 2>&1 || true
     }
 
-    # 1. Maintenance Mode aktivieren
+    # 1. Überbleibsel prüfen: .bak-Dateien die root gehören blockieren updater.phar
+    local stale_bak_files
+    stale_bak_files=$(find "$nc_dir" -name "*.bak" -not -user "$web_user" 2>/dev/null)
+    if [[ -n "$stale_bak_files" ]]; then
+        log "WARN" "Falsch gesetzte .bak-Dateien gefunden – korrigiere Eigentümer:"
+        while IFS= read -r f; do
+            log "WARN" "  $f ($(stat -c '%U:%G' "$f"))"
+            chown "${web_user}:" "$f" && log "INFO" "  → chown OK: $f" \
+                                      || log "ERROR" "  → chown fehlgeschlagen: $f"
+        done <<< "$stale_bak_files"
+    fi
+
+    # 2. Maintenance Mode aktivieren
     log "INFO" "Maintenance Mode: AN"
     if ! run_occ "$nc_dir" "$web_user" maintenance:mode --on >> "$LOG_FILE" 2>&1; then
         log "ERROR" "Fehler beim Aktivieren des Maintenance Modes"
         return 1
     fi
 
-    # 2. Nextcloud Updater
+    # 3. Nextcloud Updater
     if [[ -f "$updater_phar" ]]; then
         log "INFO" "Führe updater.phar aus..."
         run_php "$web_user" "$updater_phar" --no-interaction >> "$LOG_FILE" 2>&1
