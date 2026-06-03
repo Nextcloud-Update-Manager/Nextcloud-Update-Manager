@@ -1,0 +1,31 @@
+# =============================================================================
+# SMTP-Konfiguration für nextcloud-update-cron.sh
+# =============================================================================
+#
+# Pfad:    /etc/nextcloud-update/smtp.conf
+# Rechte:  chmod 600 /etc/nextcloud-update/smtp.conf
+#          chown root:root /etc/nextcloud-update/smtp.conf
+#
+# Einrichten:
+#   mkdir -p /etc/nextcloud-update
+#   cp smtp.conf.example /etc/nextcloud-update/smtp.conf
+#   nano /etc/nextcloud-update/smtp.conf
+#   chmod 600 /etc/nextcloud-update/smtp.conf
+#   chown root:root /etc/nextcloud-update/smtp.conf
+# =============================================================================
+
+# SMTP-Server (SMTPS, Port 465 mit implizitem TLS)
+SMTP_HOST=mail.example.com
+SMTP_PORT=465
+
+# Benutzername für SMTP-Authentifizierung
+SMTP_USER=nextcloud-notify@example.com
+
+# Passwort für SMTP-Authentifizierung
+SMTP_PASS=IhrPasswortHier
+
+# Absender-Adresse (muss zum SMTP-Account passen)
+SMTP_FROM=nextcloud-notify@example.com
+
+# Empfänger-Adresse für Benachrichtigungen
+MAIL_TO=admin@example.com
