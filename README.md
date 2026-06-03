@@ -38,8 +38,8 @@ Automated update and upgrade management for multiple Nextcloud installations man
 ## Quick Install
 
 ```bash
-git clone https://github.com/TheLegeres71/AF-Nextcloud-Update-Skripte.git
-cd AF-Nextcloud-Update-Skripte
+git clone https://github.com/TheLegeres71/Nextcloud-Update-Manager.git
+cd Nextcloud-Update-Manager
 chmod +x install.sh
 sudo ./install.sh
 ```
@@ -67,11 +67,11 @@ To force a full reconfiguration (e.g. to change the SMTP password or cron schedu
 sudo ./install.sh --full
 ```
 
-| Mode | Trigger | Scripts | SMTP config | Cron job |
-|------|---------|---------|-------------|----------|
-| **Install** | First run (no existing installation) | Installed | Interactive setup | Interactive setup |
-| **Update** | Re-run (scripts + smtp.conf already present) | Updated | Unchanged | Unchanged |
-| **Full** | `--full` flag | Updated | Interactive setup | Interactive setup |
+| Mode        | Trigger                                      | Scripts   | SMTP config       | Cron job          |
+| ----------- | -------------------------------------------- | --------- | ----------------- | ----------------- |
+| **Install** | First run (no existing installation)         | Installed | Interactive setup | Interactive setup |
+| **Update**  | Re-run (scripts + smtp.conf already present) | Updated   | Unchanged         | Unchanged         |
+| **Full**    | `--full` flag                                | Updated   | Interactive setup | Interactive setup |
 
 ## Manual Installation
 
