@@ -28,4 +28,4 @@ SMTP_PASS=IhrPasswortHier
 SMTP_FROM=nextcloud-notify@example.com
 
 # Empfänger-Adresse für Benachrichtigungen
-MAIL_TO=info@af-hosting.eu
+MAIL_TO=admin@example.com

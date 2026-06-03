@@ -56,7 +56,7 @@ The installer will:
 When a new version of this repository is available, pull and re-run the installer. It automatically detects an existing installation and switches to **update mode** — only the scripts are replaced, SMTP configuration and cron job are left untouched:
 
 ```bash
-cd AF-Nextcloud-Update-Skripte
+cd Nextcloud-Update-Manager
 git pull
 sudo ./install.sh
 ```

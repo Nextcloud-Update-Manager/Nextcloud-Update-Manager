@@ -36,7 +36,7 @@ NC_UPDATE_SERVER="https://updates.nextcloud.com/updater_server"
 NC_APPSTORE_API="https://apps.nextcloud.com/api/v1"
 
 SMTP_CONFIG="/etc/nextcloud-update/smtp.conf"
-MAIL_TO="info@af-hosting.eu"
+MAIL_TO="admin@example.com"
 
 # SMTP-Variablen (werden aus SMTP_CONFIG geladen)
 SMTP_HOST=""
