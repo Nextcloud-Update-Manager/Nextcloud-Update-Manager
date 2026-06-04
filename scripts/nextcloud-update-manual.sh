@@ -270,8 +270,13 @@ get_latest_version() {
     output=$(run_occ "$nc_dir" "$web_user" update:check 2>/dev/null) || output=""
     # Warnzeilen herausfiltern (z.B. bei needsDbUpgrade)
     output=$(echo "$output" | grep -v 'require upgrade' | grep -v 'use your browser')
-    # Versionsnummer aus "X.Y.Z is available" extrahieren; leer wenn aktuell
-    echo "$output" | grep -oP '[0-9]+\.[0-9]+\.[0-9]+(?= is available)' | head -1
+    # Nur Zeilen auswerten die "Nextcloud" enthalten – occ update:check gibt auf NC33+
+    # auch App-Update-Zeilen aus ("AppName X.Y.Z is available"), die sonst fälschlich
+    # als Server-Version erkannt werden.
+    # Gültige Beispiele:
+    #   "Nextcloud 33.0.5 is available."
+    #   "Update to Nextcloud 33.0.5 is available."
+    echo "$output" | grep -i 'nextcloud' | grep -oP '[0-9]+\.[0-9]+\.[0-9]+(?= is available)' | head -1
 }
 
 # =============================================================================

@@ -150,7 +150,7 @@ load_smtp_config() {
         value="${value// /}"
         case "$key" in
             SMTP_HOST|SMTP_PORT|SMTP_USER|SMTP_PASS|SMTP_FROM|MAIL_TO)
-                declare "$key=$value"
+                declare -g "$key=$value"
                 ;;
         esac
     done < "$SMTP_CONFIG"
@@ -313,7 +313,9 @@ get_latest_version() {
     local output
     output=$(run_occ "$nc_dir" "$web_user" update:check 2>/dev/null) || output=""
     output=$(echo "$output" | grep -v 'require upgrade' | grep -v 'use your browser')
-    echo "$output" | grep -oP '[0-9]+\.[0-9]+\.[0-9]+(?= is available)' | head -1
+    # Nur Zeilen mit "Nextcloud" auswerten – occ update:check auf NC33+ gibt auch
+    # App-Update-Zeilen aus die sonst als Server-Version fehlgedeutet werden.
+    echo "$output" | grep -i 'nextcloud' | grep -oP '[0-9]+\.[0-9]+\.[0-9]+(?= is available)' | head -1
 }
 
 # =============================================================================
