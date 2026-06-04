@@ -1,5 +1,9 @@
 # Nextcloud Update Manager
 
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/TheLegeres71/Nextcloud-Update-Manager/releases/tag/v0.1.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-ISPConfig-orange.svg)](https://www.ispconfig.org/)
+
 Automated update and upgrade management for multiple Nextcloud installations managed by **ISPConfig**.
 
 > **ISPConfig servers only** — These scripts are designed exclusively for Nextcloud installations
@@ -127,6 +131,8 @@ nextcloud-update/
 │   ├── nextcloud-update-cron.sh     # Cron job script
 │   └── smtp.conf.example            # SMTP config template
 ├── install.sh                       # Installer
+├── CHANGELOG.md                     # Version history
+├── LICENSE                          # MIT License
 ├── README.md                        # This file
 ├── DOKUMENTATION-DE.md              # Full documentation (German)
 └── DOKUMENTATION-EN.md              # Full documentation (English)
@@ -160,6 +166,10 @@ Script 1: show results → ask admin → backup → upgrade
 Script 2: send email notification → wait for manual action
 ```
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the full version history.
+
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE) for details.

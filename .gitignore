@@ -1,0 +1,17 @@
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Backups created by install.sh
+*.bak.*
+
+# Local test/scratch files
+scratch/
+test/
+*.local.sh

@@ -1,6 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # nextcloud-update-manual.sh
+# Nextcloud Update Manager v0.1.0
 # Nextcloud Update/Upgrade – Manuelle Ausführung durch Administrator
 #
 # Voraussetzungen:

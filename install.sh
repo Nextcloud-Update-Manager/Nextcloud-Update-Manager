@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# install.sh – Nextcloud Update Manager: Installations- und Update-Skript
+# install.sh – Nextcloud Update Manager v0.1.0: Installations- und Update-Skript
 #
 # Verwendung:
 #   sudo ./install.sh          # Erstinstallation ODER Update (automatisch erkannt)

@@ -1,6 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # nextcloud-update-cron.sh
+# Nextcloud Update Manager v0.1.0
 # Nextcloud Update/Upgrade – Automatischer Cronjob (root)
 #
 # Voraussetzungen:
