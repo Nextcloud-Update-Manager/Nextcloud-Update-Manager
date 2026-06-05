@@ -102,8 +102,8 @@ Each ISPConfig web user has its own PHP CLI version. When running `sudo -u web1 
 ### 3.1 Automated Installation (recommended)
 
 ```bash
-git clone https://github.com/your-user/nextcloud-update.git
-cd nextcloud-update
+git clone https://github.com/Nextcloud-Update-Manager/Nextcloud-Update-Manager.git
+cd Nextcloud-Update-Manager
 chmod +x install.sh
 sudo ./install.sh
 ```

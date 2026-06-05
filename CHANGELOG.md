@@ -73,5 +73,5 @@ Initial release.
 
 ---
 
-[Unreleased]: https://github.com/TheLegeres71/Nextcloud-Update-Manager/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/TheLegeres71/Nextcloud-Update-Manager/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Nextcloud-Update-Manager/Nextcloud-Update-Manager/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Nextcloud-Update-Manager/Nextcloud-Update-Manager/releases/tag/v0.1.0

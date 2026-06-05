@@ -102,8 +102,8 @@ Jeder ISPconfig-Web-User hat eine eigene PHP-CLI-Version. Beim Ausführen von `s
 ### 3.1 Automatische Installation (empfohlen)
 
 ```bash
-git clone https://github.com/your-user/nextcloud-update.git
-cd nextcloud-update
+git clone https://github.com/Nextcloud-Update-Manager/Nextcloud-Update-Manager.git
+cd Nextcloud-Update-Manager
 chmod +x install.sh
 sudo ./install.sh
 ```

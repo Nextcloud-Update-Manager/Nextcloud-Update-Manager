@@ -1,6 +1,6 @@
 # Nextcloud Update Manager
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/TheLegeres71/Nextcloud-Update-Manager/releases/tag/v0.1.0)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/Nextcloud-Update-Manager/Nextcloud-Update-Manager/releases/tag/v0.1.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-ISPConfig-orange.svg)](https://www.ispconfig.org/)
 
@@ -42,7 +42,7 @@ Automated update and upgrade management for multiple Nextcloud installations man
 ## Quick Install
 
 ```bash
-git clone https://github.com/TheLegeres71/Nextcloud-Update-Manager.git
+git clone https://github.com/Nextcloud-Update-Manager/Nextcloud-Update-Manager.git
 cd Nextcloud-Update-Manager
 chmod +x install.sh
 sudo ./install.sh
