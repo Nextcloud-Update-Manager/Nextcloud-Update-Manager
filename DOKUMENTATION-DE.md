@@ -504,24 +504,34 @@ Nach der Eingabe wird ein **SMTP-Verbindungstest** angeboten, der eine Test-E-Ma
 ### 8.3 Beispiel-Log (Minor-Update)
 
 ```
-[2026-06-03 03:12:00] [INFO] === Wartungsbeginn: /var/www/clients/client1/web1/web | User: web1 ===
-[2026-06-03 03:12:01] [INFO] Installierte Version: 28.0.12.3
-[2026-06-03 03:12:01] [INFO] PHP-Version (Web-User): 8.2.18
-[2026-06-03 03:12:02] [INFO] Frage Update-Server an...
-[2026-06-03 03:12:02] [INFO] Verfügbare Version laut Update-Server: 28.0.14
-[2026-06-03 03:12:02] [INFO] Minor-Update verfügbar: v28.0.12.3 → v28.0.14
-[2026-06-03 03:12:02] [INFO] Maintenance Mode: AN
-[2026-06-03 03:12:03] [INFO] Führe Nextcloud Updater (updater.phar) aus...
-[2026-06-03 03:13:44] [INFO] updater.phar abgeschlossen (Exit-Code: 0)
-[2026-06-03 03:13:44] [INFO] Datenbankmigrationen (occ upgrade)...
-[2026-06-03 03:14:12] [INFO] Datenbankmigrationen OK
-[2026-06-03 03:14:12] [INFO] App-Updates (occ app:update --all)...
-[2026-06-03 03:14:28] [INFO] Reparatur-Routine (occ maintenance:repair)...
-[2026-06-03 03:14:31] [INFO] Maintenance Mode: AUS
-[2026-06-03 03:14:31] [INFO] Update/Upgrade-Ablauf abgeschlossen
-[2026-06-03 03:14:32] [INFO] Minor-Update abgeschlossen. Neue Version: 28.0.14
-[2026-06-03 03:14:32] [INFO] === Wartungsende: /var/www/clients/client1/web1/web ===
+[2026-06-03 03:12:00] [INFO]  === Wartungsbeginn: /var/www/clients/client1/web1/web | User: web1 ===
+[2026-06-03 03:12:01] [INFO]  Installierte Version: 28.0.12.3
+[2026-06-03 03:12:01] [INFO]  PHP-Version (Web-User): 8.2.18
+[2026-06-03 03:12:02] [INFO]  Prüfe auf Updates (occ update:check)...
+[2026-06-03 03:12:02] [DEBUG] occ update:check Antwort: Nextcloud 28.0.14 is available. Get more information on how to update at https://nextcloud.com/changelog/
+[2026-06-03 03:12:02] [INFO]  Verfügbare Version laut Update-Server: 28.0.14
+[2026-06-03 03:12:02] [INFO]  Minor-Update verfügbar: v28.0.12.3 → v28.0.14
+[2026-06-03 03:12:02] [INFO]  Maintenance Mode: AN
+[2026-06-03 03:12:03] [INFO]  Führe Nextcloud Updater (updater.phar) aus...
+[2026-06-03 03:13:44] [INFO]  updater.phar abgeschlossen (Exit-Code: 0)
+[2026-06-03 03:13:44] [INFO]  Datenbankmigrationen (occ upgrade)...
+[2026-06-03 03:14:12] [INFO]  Datenbankmigrationen OK
+[2026-06-03 03:14:12] [INFO]  App-Updates (occ app:update --all)...
+[2026-06-03 03:14:28] [INFO]  Reparatur-Routine (occ maintenance:repair)...
+[2026-06-03 03:14:31] [INFO]  Maintenance Mode: AUS
+[2026-06-03 03:14:31] [INFO]  Update/Upgrade-Ablauf abgeschlossen
+[2026-06-03 03:14:32] [INFO]  Minor-Update abgeschlossen. Neue Version: 28.0.14
+[2026-06-03 03:14:32] [INFO]  === Wartungsende: /var/www/clients/client1/web1/web ===
 ```
+
+Wenn **kein Server-Update verfügbar** ist, erscheint stattdessen eine kombinierte Meldung aus DEBUG- und INFO-Zeile:
+
+```
+[2026-06-03 03:12:02] [DEBUG] occ update:check Antwort: Nextcloud 28.0.12.3 is up to date.
+[2026-06-03 03:12:02] [INFO]  Kein Server-Update verfügbar (aktuell, Phased Rollout noch nicht erreicht oder Update-Server nicht erreichbar – Details im DEBUG-Log oben)
+```
+
+> **Hinweis Phased Rollout:** Nextcloud rollt neue Major-Versionen schrittweise aus. Verschiedene Installationen auf demselben Server können unterschiedliche Update-Angebote erhalten — dies ist kein Fehler, sondern gesteuertes Nextcloud-Verhalten. Die DEBUG-Zeile zeigt die genaue Antwort des Update-Servers.
 
 ### 8.4 Log-Rotation (logrotate)
 
@@ -746,6 +756,21 @@ GET https://apps.nextcloud.com/api/v1/platform/{major}.0.0/apps.json
 ```
 
 Gibt JSON-Array aller für diese Plattformversion verfügbaren Apps zurück. Jedes Element enthält mindestens `id` (App-ID).
+
+Die verwendete URL und die Anzahl geladener Apps werden im Log protokolliert:
+
+```
+[DEBUG] App Store API URL: https://apps.nextcloud.com/api/v1/platform/34.0.0/apps.json
+[INFO]  App Store für v34: 312 Apps geladen
+```
+
+Bei Fehler (kein Netz, HTTP ≠ 200):
+
+```
+[WARN]  App Store API Fehler (HTTP 503) – alle Drittanbieter-Apps als 'unbekannt' markiert
+```
+
+> **Hinweis:** Apps die für eine neue Major-Version noch nicht im App Store gelistet sind, können trotzdem kompatibel sein — der App-Entwickler hat die Kompatibilität noch nicht deklariert. Prüfen Sie solche Apps manuell auf [apps.nextcloud.com](https://apps.nextcloud.com).
 
 ### 11.2 occ-Befehle
 

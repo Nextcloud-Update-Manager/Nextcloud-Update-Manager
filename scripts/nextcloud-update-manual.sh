@@ -267,17 +267,15 @@ get_latest_version() {
     # Output-Beispiele:
     #   "Nextcloud 32.0.10 is available. Get more information..."
     #   "Nextcloud 32.0.8 is up to date"
-    local output
-    output=$(run_occ "$nc_dir" "$web_user" update:check 2>/dev/null) || output=""
+    local raw_output filtered
+    raw_output=$(run_occ "$nc_dir" "$web_user" update:check 2>/dev/null) || raw_output=""
     # Warnzeilen herausfiltern (z.B. bei needsDbUpgrade)
-    output=$(echo "$output" | grep -v 'require upgrade' | grep -v 'use your browser')
-    # Nur Zeilen auswerten die "Nextcloud" enthalten – occ update:check gibt auf NC33+
-    # auch App-Update-Zeilen aus ("AppName X.Y.Z is available"), die sonst fälschlich
+    filtered=$(echo "$raw_output" | grep -v 'require upgrade' | grep -v 'use your browser')
+    log "DEBUG" "occ update:check Antwort: ${filtered:-<leer>}"
+    # Nur Zeilen mit "Nextcloud" auswerten – occ update:check gibt auf NC33+ auch
+    # App-Update-Zeilen aus ("AppName X.Y.Z is available") die sonst fälschlich
     # als Server-Version erkannt werden.
-    # Gültige Beispiele:
-    #   "Nextcloud 33.0.5 is available."
-    #   "Update to Nextcloud 33.0.5 is available."
-    echo "$output" | grep -i 'nextcloud' | grep -oP '[0-9]+\.[0-9]+\.[0-9]+(?= is available)' | head -1
+    echo "$filtered" | grep -i 'nextcloud' | grep -oP '[0-9]+\.[0-9]+\.[0-9]+(?= is available)' | head -1
 }
 
 # =============================================================================
@@ -309,14 +307,20 @@ check_app_compatibility() {
 
     # App-Store-Liste für Zielversion laden (mit Cache pro Major-Version)
     if [[ "$APPSTORE_CACHE_VERSION" != "$target_major" || -z "$APPSTORE_CACHE" ]]; then
-        log_debug "Lade App-Liste für NC v${target_major} vom App Store..."
-        APPSTORE_CACHE=$(curl -sf --max-time 60 \
-            "${NC_APPSTORE_API}/platform/${target_major}.0.0/apps.json" 2>/dev/null) || APPSTORE_CACHE=""
+        local appstore_url="${NC_APPSTORE_API}/platform/${target_major}.0.0/apps.json"
+        log "DEBUG" "App Store API URL: ${appstore_url}"
+        local http_status raw_response
+        raw_response=$(curl -sf --max-time 60 -w "%{http_code}" "$appstore_url" 2>/dev/null) || raw_response=""
+        http_status="${raw_response: -3}"
+        APPSTORE_CACHE="${raw_response%???}"
         APPSTORE_CACHE_VERSION="$target_major"
-        if [[ -z "$APPSTORE_CACHE" ]]; then
-            log "WARN" "App Store API nicht erreichbar – alle Drittanbieter-Apps als 'unbekannt' markiert"
+        if [[ "$http_status" != "200" || -z "$APPSTORE_CACHE" ]]; then
+            log "WARN" "App Store API Fehler (HTTP ${http_status:-0}) – alle Drittanbieter-Apps als 'unbekannt' markiert"
+            APPSTORE_CACHE=""
         else
-            log_debug "App Store: $(echo "$APPSTORE_CACHE" | jq 'length' 2>/dev/null || echo '?') Apps für v${target_major} geladen"
+            local app_count
+            app_count=$(echo "$APPSTORE_CACHE" | jq 'length' 2>/dev/null || echo '?')
+            log "INFO" "App Store für v${target_major}: ${app_count} Apps geladen"
         fi
     fi
 
@@ -566,7 +570,7 @@ process_installation() {
     latest_version=$(get_latest_version "$nc_dir" "$web_user")
 
     if [[ -z "$latest_version" ]]; then
-        log "INFO" "Keine Update-Informationen erhalten (Nextcloud aktuell oder Update-Server nicht erreichbar)"
+        log "INFO" "Kein Server-Update verfügbar (aktuell, Phased Rollout noch nicht erreicht oder Update-Server nicht erreichbar – Details im DEBUG-Log oben)"
         log "INFO" "=== Wartungsende: $nc_dir ==="
         return 0
     fi

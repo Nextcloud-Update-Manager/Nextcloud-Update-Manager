@@ -504,24 +504,34 @@ After input, a **connection test** is offered that sends a test email to verify 
 ### 8.3 Sample Log (Minor Update)
 
 ```
-[2026-06-03 03:12:00] [INFO] === Maintenance start: /var/www/clients/client1/web1/web | User: web1 ===
-[2026-06-03 03:12:01] [INFO] Installed version: 28.0.12.3
-[2026-06-03 03:12:01] [INFO] PHP version (web user): 8.2.18
-[2026-06-03 03:12:02] [INFO] Querying update server...
-[2026-06-03 03:12:02] [INFO] Available version from update server: 28.0.14
-[2026-06-03 03:12:02] [INFO] Minor update available: v28.0.12.3 → v28.0.14
-[2026-06-03 03:12:02] [INFO] Maintenance mode: ON
-[2026-06-03 03:12:03] [INFO] Running Nextcloud updater (updater.phar)...
-[2026-06-03 03:13:44] [INFO] updater.phar completed (exit code: 0)
-[2026-06-03 03:13:44] [INFO] Database migrations (occ upgrade)...
-[2026-06-03 03:14:12] [INFO] Database migrations OK
-[2026-06-03 03:14:12] [INFO] App updates (occ app:update --all)...
-[2026-06-03 03:14:28] [INFO] Repair routine (occ maintenance:repair)...
-[2026-06-03 03:14:31] [INFO] Maintenance mode: OFF
-[2026-06-03 03:14:31] [INFO] Update/upgrade procedure complete
-[2026-06-03 03:14:32] [INFO] Minor update complete. New version: 28.0.14
-[2026-06-03 03:14:32] [INFO] === Maintenance end: /var/www/clients/client1/web1/web ===
+[2026-06-03 03:12:00] [INFO]  === Maintenance start: /var/www/clients/client1/web1/web | User: web1 ===
+[2026-06-03 03:12:01] [INFO]  Installed version: 28.0.12.3
+[2026-06-03 03:12:01] [INFO]  PHP version (web user): 8.2.18
+[2026-06-03 03:12:02] [INFO]  Checking for updates (occ update:check)...
+[2026-06-03 03:12:02] [DEBUG] occ update:check response: Nextcloud 28.0.14 is available. Get more information on how to update at https://nextcloud.com/changelog/
+[2026-06-03 03:12:02] [INFO]  Available version from update server: 28.0.14
+[2026-06-03 03:12:02] [INFO]  Minor update available: v28.0.12.3 → v28.0.14
+[2026-06-03 03:12:02] [INFO]  Maintenance mode: ON
+[2026-06-03 03:12:03] [INFO]  Running Nextcloud updater (updater.phar)...
+[2026-06-03 03:13:44] [INFO]  updater.phar completed (exit code: 0)
+[2026-06-03 03:13:44] [INFO]  Database migrations (occ upgrade)...
+[2026-06-03 03:14:12] [INFO]  Database migrations OK
+[2026-06-03 03:14:12] [INFO]  App updates (occ app:update --all)...
+[2026-06-03 03:14:28] [INFO]  Repair routine (occ maintenance:repair)...
+[2026-06-03 03:14:31] [INFO]  Maintenance mode: OFF
+[2026-06-03 03:14:31] [INFO]  Update/upgrade procedure complete
+[2026-06-03 03:14:32] [INFO]  Minor update complete. New version: 28.0.14
+[2026-06-03 03:14:32] [INFO]  === Maintenance end: /var/www/clients/client1/web1/web ===
 ```
+
+When **no server update is available**, a combined DEBUG/INFO pair appears instead:
+
+```
+[2026-06-03 03:12:02] [DEBUG] occ update:check response: Nextcloud 28.0.12.3 is up to date.
+[2026-06-03 03:12:02] [INFO]  No server update available (up to date, phased rollout not yet reached, or update server unreachable — see DEBUG log above)
+```
+
+> **Note on Phased Rollout:** Nextcloud rolls out new major versions gradually. Different installations on the same server may receive different update offers — this is controlled Nextcloud behaviour, not an error. The DEBUG line shows the exact response from the update server.
 
 ### 8.4 Log Rotation (logrotate)
 
@@ -745,6 +755,21 @@ GET https://apps.nextcloud.com/api/v1/platform/{major}.0.0/apps.json
 ```
 
 Returns a JSON array of all apps available for the given platform version. Each element contains at least `id` (the app ID).
+
+The URL used and the number of apps loaded are logged:
+
+```
+[DEBUG] App Store API URL: https://apps.nextcloud.com/api/v1/platform/34.0.0/apps.json
+[INFO]  App Store für v34: 312 Apps geladen
+```
+
+On error (no network, HTTP ≠ 200):
+
+```
+[WARN]  App Store API Fehler (HTTP 503) – alle Drittanbieter-Apps als 'unbekannt' markiert
+```
+
+> **Note:** Apps not listed in the App Store for a new major version may still be compatible — the app developer has simply not yet declared compatibility. Always verify such apps manually at [apps.nextcloud.com](https://apps.nextcloud.com).
 
 ### 11.2 occ Commands
 

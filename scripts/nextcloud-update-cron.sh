@@ -311,12 +311,14 @@ get_major() {
 get_latest_version() {
     local nc_dir="$1"
     local web_user="$2"
-    local output
-    output=$(run_occ "$nc_dir" "$web_user" update:check 2>/dev/null) || output=""
-    output=$(echo "$output" | grep -v 'require upgrade' | grep -v 'use your browser')
+    local raw_output filtered
+    raw_output=$(run_occ "$nc_dir" "$web_user" update:check 2>/dev/null) || raw_output=""
+    # Warnzeilen herausfiltern (z.B. bei needsDbUpgrade)
+    filtered=$(echo "$raw_output" | grep -v 'require upgrade' | grep -v 'use your browser')
+    log "DEBUG" "occ update:check Antwort: ${filtered:-<leer>}"
     # Nur Zeilen mit "Nextcloud" auswerten – occ update:check auf NC33+ gibt auch
     # App-Update-Zeilen aus die sonst als Server-Version fehlgedeutet werden.
-    echo "$output" | grep -i 'nextcloud' | grep -oP '[0-9]+\.[0-9]+\.[0-9]+(?= is available)' | head -1
+    echo "$filtered" | grep -i 'nextcloud' | grep -oP '[0-9]+\.[0-9]+\.[0-9]+(?= is available)' | head -1
 }
 
 # =============================================================================
@@ -341,10 +343,21 @@ check_app_compatibility() {
     log "INFO" "App-Kompatibilität wird geprüft für v${target_major}..."
 
     if [[ "$APPSTORE_CACHE_VERSION" != "$target_major" || -z "$APPSTORE_CACHE" ]]; then
-        APPSTORE_CACHE=$(curl -sf --max-time 60 \
-            "${NC_APPSTORE_API}/platform/${target_major}.0.0/apps.json" 2>/dev/null) || APPSTORE_CACHE=""
+        local appstore_url="${NC_APPSTORE_API}/platform/${target_major}.0.0/apps.json"
+        log "DEBUG" "App Store API URL: ${appstore_url}"
+        local http_status raw_response
+        raw_response=$(curl -sf --max-time 60 -w "%{http_code}" "$appstore_url" 2>/dev/null) || raw_response=""
+        http_status="${raw_response: -3}"
+        APPSTORE_CACHE="${raw_response%???}"
         APPSTORE_CACHE_VERSION="$target_major"
-        [[ -z "$APPSTORE_CACHE" ]] && log "WARN" "App Store API nicht erreichbar – Apps als 'unbekannt' markiert"
+        if [[ "$http_status" != "200" || -z "$APPSTORE_CACHE" ]]; then
+            log "WARN" "App Store API Fehler (HTTP ${http_status:-0}) – Apps als 'unbekannt' markiert"
+            APPSTORE_CACHE=""
+        else
+            local app_count
+            app_count=$(echo "$APPSTORE_CACHE" | jq 'length' 2>/dev/null || echo '?')
+            log "INFO" "App Store für v${target_major}: ${app_count} Apps geladen"
+        fi
     fi
 
     local installed_apps
@@ -612,7 +625,7 @@ process_installation() {
     latest_version=$(get_latest_version "$nc_dir" "$web_user")
 
     if [[ -z "$latest_version" ]]; then
-        log "INFO" "Kein Update erhalten (aktuell oder Update-Server nicht erreichbar)"
+        log "INFO" "Kein Server-Update verfügbar (aktuell, Phased Rollout noch nicht erreicht oder Update-Server nicht erreichbar – Details im DEBUG-Log oben)"
         log "INFO" "=== Wartungsende: $nc_dir ==="
         return 0
     fi

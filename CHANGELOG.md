@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.0.1] – 2026-06-18
+
+### Changed
+
+- `get_latest_version()`: filtered output of `occ update:check` is now logged at `DEBUG` level, making it possible to distinguish between *genuinely up to date*, *Phased Rollout not yet reached*, and *update server unreachable* without manual `occ` calls
+- `check_app_compatibility()`: the full App Store API URL is logged at `DEBUG` level before each request
+- `check_app_compatibility()`: HTTP status code of the App Store API response is verified; on non-200 or empty response a `WARN` line with the actual HTTP status is written instead of a generic error
+- `check_app_compatibility()`: App Store app count promoted from `DEBUG` to `INFO` level so it is always visible in production logs
+- "No update available" log message now explicitly mentions Phased Rollout as a possible reason and refers to the `DEBUG` log for details
+
+---
+
 ## [0.1.0] – 2026-06-04
 
 Initial release.
@@ -73,5 +85,6 @@ Initial release.
 
 ---
 
-[Unreleased]: https://github.com/Nextcloud-Update-Manager/Nextcloud-Update-Manager/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Nextcloud-Update-Manager/Nextcloud-Update-Manager/compare/v0.1.0.1...HEAD
+[0.1.0.1]: https://github.com/Nextcloud-Update-Manager/Nextcloud-Update-Manager/compare/v0.1.0...v0.1.0.1
 [0.1.0]: https://github.com/Nextcloud-Update-Manager/Nextcloud-Update-Manager/releases/tag/v0.1.0
