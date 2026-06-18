@@ -417,6 +417,21 @@ perform_backup() {
 # UPDATE-ABLAUF
 # =============================================================================
 
+run_standalone_app_updates() {
+    local nc_dir="$1"
+    local web_user="$2"
+
+    if $DRY_RUN; then
+        log "INFO" "[DRY-RUN] Würde App-Updates anwenden (occ app:update --all)"
+        return 0
+    fi
+
+    log "INFO" "Wende ausstehende App-Updates an (occ app:update --all)..."
+    run_occ "$nc_dir" "$web_user" app:update --all >> "$LOG_FILE" 2>&1 \
+        && log "INFO" "App-Updates abgeschlossen" \
+        || log "WARN" "Einige App-Updates fehlgeschlagen – Log prüfen"
+}
+
 run_update() {
     local nc_dir="$1"
     local web_user="$2"
@@ -571,6 +586,7 @@ process_installation() {
 
     if [[ -z "$latest_version" ]]; then
         log "INFO" "Kein Server-Update verfügbar (aktuell, Phased Rollout noch nicht erreicht oder Update-Server nicht erreichbar – Details im DEBUG-Log oben)"
+        run_standalone_app_updates "$nc_dir" "$web_user"
         log "INFO" "=== Wartungsende: $nc_dir ==="
         return 0
     fi
@@ -714,6 +730,7 @@ process_installation() {
         else
             log "INFO" "Administrator hat Upgrade abgelehnt (Eingabe: '${answer:-leer}') – übersprungen"
             echo -e "${YELLOW}  Upgrade übersprungen. Nextcloud läuft weiterhin mit v${current_version}.${RESET}"
+            run_standalone_app_updates "$nc_dir" "$web_user"
         fi
     fi
 

@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0.1] – 2026-06-18
 
+### Fixed
+
+- App updates (`occ app:update --all`) were only applied as part of a Nextcloud server update. They are now also applied when no server update is available (e.g. Phased Rollout not yet reached) and when a major upgrade is declined interactively (`nextcloud-update-manual.sh`) or deferred via email (`nextcloud-update-cron.sh`)
+- `nextcloud-update-cron.sh`: `occ app:update --all` is now called unconditionally at the end of every installation's processing cycle, guaranteeing daily app updates regardless of server update status
+
 ### Changed
 
 - `get_latest_version()`: filtered output of `occ update:check` is now logged at `DEBUG` level, making it possible to distinguish between *genuinely up to date*, *Phased Rollout not yet reached*, and *update server unreachable* without manual `occ` calls

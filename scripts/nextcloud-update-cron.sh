@@ -442,6 +442,16 @@ perform_backup() {
 # UPDATE-ABLAUF
 # =============================================================================
 
+run_standalone_app_updates() {
+    local nc_dir="$1"
+    local web_user="$2"
+
+    log "INFO" "Wende ausstehende App-Updates an (occ app:update --all)..."
+    run_occ "$nc_dir" "$web_user" app:update --all >> "$LOG_FILE" 2>&1 \
+        && log "INFO" "App-Updates abgeschlossen" \
+        || log "WARN" "Einige App-Updates fehlgeschlagen – Log prüfen"
+}
+
 run_update() {
     local nc_dir="$1"
     local web_user="$2"
@@ -626,63 +636,63 @@ process_installation() {
 
     if [[ -z "$latest_version" ]]; then
         log "INFO" "Kein Server-Update verfügbar (aktuell, Phased Rollout noch nicht erreicht oder Update-Server nicht erreichbar – Details im DEBUG-Log oben)"
-        log "INFO" "=== Wartungsende: $nc_dir ==="
-        return 0
-    fi
 
-    log "INFO" "Verfügbare Version: $latest_version"
-
-    if [[ "$(normalize_version "$current_version")" == "$(normalize_version "$latest_version")" ]]; then
-        log "INFO" "Nextcloud ist aktuell (v${current_version})"
-        log "INFO" "=== Wartungsende: $nc_dir ==="
-        return 0
-    fi
-
-    local current_major latest_major
-    current_major=$(get_major "$current_version")
-    latest_major=$(get_major "$latest_version")
-
-    # -------------------------------------------------------------------------
-    # MINOR-UPDATE: automatisch durchführen
-    # -------------------------------------------------------------------------
-    if [[ "$current_major" == "$latest_major" ]]; then
-        log "INFO" "Minor-Update wird automatisch durchgeführt: v${current_version} → v${latest_version}"
-
-        if run_update "$nc_dir" "$web_user"; then
-            local new_version
-            new_version=$(get_current_version "$nc_dir" "$web_user")
-            log "INFO" "Minor-Update OK. Installierte Version: ${new_version:-unbekannt}"
-        else
-            log "ERROR" "Minor-Update fehlgeschlagen"
-            log "INFO" "=== Wartungsende (FEHLER): $nc_dir ==="
-            return 1
-        fi
-
-    # -------------------------------------------------------------------------
-    # MAJOR-UPGRADE: E-Mail senden, nicht automatisch upgraden
-    # -------------------------------------------------------------------------
     else
-        log "INFO" "Major-Upgrade verfügbar: v${current_major} → v${latest_major}"
 
-        # App-Kompatibilität prüfen
-        check_app_compatibility "$nc_dir" "$web_user" "$latest_major"
+        log "INFO" "Verfügbare Version: $latest_version"
 
-        # Kompatibilitätsergebnis loggen
-        [[ ${#COMPAT_APPS[@]} -gt 0 ]]  && log "INFO" "Im App Store für v${latest_major}: ${COMPAT_APPS[*]}"
-        [[ ${#UNKNOWN_APPS[@]} -gt 0 ]] && log "WARN" "Nicht im App Store für v${latest_major}: ${UNKNOWN_APPS[*]}"
+        if [[ "$(normalize_version "$current_version")" == "$(normalize_version "$latest_version")" ]]; then
+            log "INFO" "Nextcloud ist aktuell (v${current_version})"
 
-        # E-Mail-Benachrichtigung senden
-        local hostname
-        hostname=$(hostname -f 2>/dev/null || hostname)
+        else
 
-        local subject="[Nextcloud] Major-Upgrade verfügbar: v${current_major}→v${latest_major} | ${hostname} | ${web_user}"
-        local body
-        body=$(build_upgrade_email_body \
-            "$nc_dir" "$web_user" "$current_version" "$latest_version" "$latest_major" "$hostname")
+            local current_major latest_major
+            current_major=$(get_major "$current_version")
+            latest_major=$(get_major "$latest_version")
 
-        log "INFO" "Sende E-Mail-Benachrichtigung an $MAIL_TO..."
-        send_email "$subject" "$body"
+            # -----------------------------------------------------------------
+            # MINOR-UPDATE: automatisch durchführen
+            # -----------------------------------------------------------------
+            if [[ "$current_major" == "$latest_major" ]]; then
+                log "INFO" "Minor-Update wird automatisch durchgeführt: v${current_version} → v${latest_version}"
+
+                if run_update "$nc_dir" "$web_user"; then
+                    local new_version
+                    new_version=$(get_current_version "$nc_dir" "$web_user")
+                    log "INFO" "Minor-Update OK. Installierte Version: ${new_version:-unbekannt}"
+                else
+                    log "ERROR" "Minor-Update fehlgeschlagen"
+                    log "INFO" "=== Wartungsende (FEHLER): $nc_dir ==="
+                    return 1
+                fi
+
+            # -----------------------------------------------------------------
+            # MAJOR-UPGRADE: E-Mail senden, nicht automatisch upgraden
+            # -----------------------------------------------------------------
+            else
+                log "INFO" "Major-Upgrade verfügbar: v${current_major} → v${latest_major}"
+
+                check_app_compatibility "$nc_dir" "$web_user" "$latest_major"
+                [[ ${#COMPAT_APPS[@]} -gt 0 ]]  && log "INFO" "Im App Store für v${latest_major}: ${COMPAT_APPS[*]}"
+                [[ ${#UNKNOWN_APPS[@]} -gt 0 ]] && log "WARN" "Nicht im App Store für v${latest_major}: ${UNKNOWN_APPS[*]}"
+
+                local hostname
+                hostname=$(hostname -f 2>/dev/null || hostname)
+                local subject="[Nextcloud] Major-Upgrade verfügbar: v${current_major}→v${latest_major} | ${hostname} | ${web_user}"
+                local body
+                body=$(build_upgrade_email_body \
+                    "$nc_dir" "$web_user" "$current_version" "$latest_version" "$latest_major" "$hostname")
+
+                log "INFO" "Sende E-Mail-Benachrichtigung an $MAIL_TO..."
+                send_email "$subject" "$body"
+            fi
+        fi
     fi
+
+    # App-Updates immer anwenden – unabhängig vom Server-Update-Status.
+    # Nach einem Minor-Update ist dies ein No-op; nach Major-Upgrade-Ablehnung
+    # oder Phased Rollout werden ausstehende App-Updates für die laufende Version eingespielt.
+    run_standalone_app_updates "$nc_dir" "$web_user"
 
     log "INFO" "=== Wartungsende: $nc_dir ==="
     return 0
