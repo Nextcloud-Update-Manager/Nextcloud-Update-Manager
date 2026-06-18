@@ -325,7 +325,7 @@ get_latest_version() {
 # APP-KOMPATIBILITÄTSPRÜFUNG
 # =============================================================================
 
-CORE_APPS_PATTERN="^(admin_audit|app_api|bruteforcesettings|cloud_federation_api|comments|contactsinteraction|dashboard|dav|encryption|federatedfilesharing|federation|files|files_downloadlimit|files_external|files_pdfviewer|files_reminders|files_sharing|files_trash|files_trashbin|files_versions|firstrunwizard|logreader|lookup_server_connector|nextcloud_announcements|notifications|oauth2|password_policy|privacy|profile|provisioning_api|recommendations|serverinfo|settings|sharebymail|support|survey_client|systemtags|theming|twofactor_backupcodes|updatenotification|user_ldap|user_status|weather_status|webhook_listeners|workflowengine|activity|circles|richdocuments|richdocumentscode|text|viewer|photos|talk|calendar|contacts)$"
+CORE_APPS_PATTERN="^(admin_audit|app_api|bruteforcesettings|cloud_federation_api|comments|contactsinteraction|dashboard|dav|encryption|federatedfilesharing|federation|files|files_downloadlimit|files_external|files_pdfviewer|files_reminders|files_sharing|files_trash|files_trashbin|files_versions|firstrunwizard|logreader|lookup_server_connector|nextcloud_announcements|notifications|oauth2|password_policy|privacy|profile|provisioning_api|recommendations|serverinfo|settings|sharebymail|support|survey_client|systemtags|theming|twofactor_backupcodes|twofactor_totp|updatenotification|user_ldap|user_status|weather_status|webhook_listeners|workflowengine|activity|circles|richdocuments|richdocumentscode|text|viewer|photos|talk|calendar|contacts)$"
 
 is_core_app() {
     echo "$1" | grep -qE "$CORE_APPS_PATTERN"

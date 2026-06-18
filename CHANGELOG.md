@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - App updates (`occ app:update --all`) were only applied as part of a Nextcloud server update. They are now also applied when no server update is available (e.g. Phased Rollout not yet reached) and when a major upgrade is declined interactively (`nextcloud-update-manual.sh`) or deferred via email (`nextcloud-update-cron.sh`)
 - `nextcloud-update-cron.sh`: `occ app:update --all` is now called unconditionally at the end of every installation's processing cycle, guaranteeing daily app updates regardless of server update status
+- `twofactor_totp` added to `CORE_APPS_PATTERN`: the app has been bundled with the Nextcloud server package since NC26 and is no longer listed in the App Store; it was incorrectly flagged as unknown during major upgrade compatibility checks
 
 ### Changed
 
